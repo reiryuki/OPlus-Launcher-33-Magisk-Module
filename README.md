@@ -32,9 +32,11 @@
 - Change your default home to this launcher via Settings app (or you can copy the content of default.sh and paste it to Terminal/Termux app. Type su and grant root first!)
 
 ## Optionals
+- https://t.me/ryukinotes/5
 - Global: https://t.me/androidryukimodsdiscussions/60861
 
 ## Troubleshootings
+- https://t.me/ryukinotes/5
 - Global: https://t.me/androidryukimodsdiscussions/29836
 
 ## Known Issues
