@@ -184,7 +184,8 @@ if [ "$RECENTS" == true ]; then
   done
   ui_print " "
 else
-  rm -rf $MODPATH/system/product/overlay
+  rm -rf $MODPATH/system/product/overlay\
+   `find $MODPATH -name *thena*`
 fi
 if [ "$RECENTS" == true ] && [ ! -d /product/overlay ]; then
   ui_print "- Using /vendor/overlay/ instead of /product/overlay/"
