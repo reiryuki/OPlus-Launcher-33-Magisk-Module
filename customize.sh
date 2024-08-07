@@ -3,6 +3,7 @@ ui_print " "
 
 # var
 UID=`id -u`
+[ ! "$UID" ] && UID=0
 LIST32BIT=`grep_get_prop ro.product.cpu.abilist32`
 if [ ! "$LIST32BIT" ]; then
   LIST32BIT=`grep_get_prop ro.system.product.cpu.abilist32`

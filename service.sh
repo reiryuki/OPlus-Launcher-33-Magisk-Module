@@ -16,9 +16,9 @@ until [ "`getprop sys.boot_completed`" == 1 ]; do
 done
 
 # list
-PKGS=`cat $MODPATH/package.txt
-       com.oplus.athena:pinner
-       com.oplus.uxdesign:uxCenterProvider`
+PKGS="`cat $MODPATH/package.txt`
+      com.oplus.athena:pinner
+      com.oplus.uxdesign:uxCenterProvider"
 for PKG in $PKGS; do
   magisk --denylist rm $PKG 2>/dev/null
   magisk --sulist add $PKG 2>/dev/null
