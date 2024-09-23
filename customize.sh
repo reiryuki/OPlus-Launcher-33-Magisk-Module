@@ -8,6 +8,9 @@ LIST32BIT=`grep_get_prop ro.product.cpu.abilist32`
 if [ ! "$LIST32BIT" ]; then
   LIST32BIT=`grep_get_prop ro.system.product.cpu.abilist32`
 fi
+if [ ! "$LIST32BIT" ]; then
+  [ -f /system/lib/libandroid.so ] && LIST32BIT=true
+fi
 
 # log
 if [ "$BOOTMODE" != true ]; then
@@ -229,7 +232,7 @@ if [ "`grep_prop data.cleanup $OPTIONALS`" == 1 ]; then
   ui_print " "
 elif [ -d $DIR ]\
 && [ "$PREVMODNAME" != "$MODNAME" ]; then
-  ui_print "- Different version detected"
+  ui_print "- Different module name is detected"
   ui_print "  Cleaning-up $MODID data..."
   cleanup
   ui_print " "

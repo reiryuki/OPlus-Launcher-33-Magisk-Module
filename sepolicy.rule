@@ -22,6 +22,9 @@ allow { system_app priv_app platform_app untrusted_app_29 untrusted_app_27 untru
 
 ## UXDesign
 
+# file
+allow { system_app priv_app platform_app untrusted_app_29 untrusted_app_27 untrusted_app } vendor_default_prop file { open getattr map }
+
 # dir
 allow { system_app priv_app platform_app untrusted_app_29 untrusted_app_27 untrusted_app } system_data_file dir { read write open }
 

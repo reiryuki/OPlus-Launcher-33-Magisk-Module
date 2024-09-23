@@ -16,11 +16,11 @@
 
 ## Requirements
 - NOT in OPlus ROM
-- Android 11 and up
+- Android 11 (SDK 30) and up
 - Magisk or KernelSU installed
 - OPlus Core Magisk Module v0.2 or above installed https://github.com/reiryuki/OPlus-Core-Magisk-Module
-- Recents provider requires Android 13 and up
-- Gesture navigation requires android.permission.INJECT_EVENTS. The permission can only be granted in AOSP signatured ROM or disabled Android Signature Verification in Android 13 and bellow.
+- Recents provider requires Android 13 (SDK 33) and up
+- Gesture navigation requires android.permission.INJECT_EVENTS. The permission can only be granted in AOSP signatured ROM or disabled Android Signature Verification in Android 13 (SDK 33) and bellow.
 
 ## Installation Guide & Download Link
 - Install OPlus Core Magisk Module v0.2 or above first: https://github.com/reiryuki/OPlus-Core-Magisk-Module
@@ -54,6 +54,6 @@
 - You can contribute ideas about this Magisk Module here: https://t.me/androidappsportdevelopment
 
 ## Sponsors
-- https://t.me/androidryukimodsdiscussions/2619
+- https://t.me/ryukinotes/25
 
 
