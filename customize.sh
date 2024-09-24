@@ -97,9 +97,9 @@ if [ ! -f $FILE ]; then
   ui_print "! OPlus Core Magisk Module is not installed."
   ui_print "  Please read github installation guide!"
   abort
-elif [ "$NUM" -lt 2 ]; then
+elif [ "$NUM" -lt 3 ]; then
   ui_print "! This version requires OPlus Core Magisk Module"
-  ui_print "  v0.2 or above."
+  ui_print "  v0.3 or above."
   abort
 else
   rm -f /data/adb/modules/OPlusCore/remove
