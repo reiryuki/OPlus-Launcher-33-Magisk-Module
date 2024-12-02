@@ -27,9 +27,8 @@
 - If you want to activate the recents provider, READ Optionals bellow!
 - Install this module https://www.pling.com/p/2181584/ via Magisk app or KernelSU app or Recovery if Magisk installed
 - If you are using KernelSU, you need to disable Unmount Modules by Default in KernelSU app settings
-- At the first installation, you need to reboot and re-install this module again afterwards to grant permissions (except in AOSP signatured ROM).
 - Reboot
-- If you are using KernelSU, you need to allow superuser list manually all package name listed in package.txt (and your home launcher app also) (enable show system apps) and reboot afterwards
+- If you are using KernelSU, you need to allow superuser list manually all package name listed in package.txt (enable show system apps) and reboot afterwards
 - Change your default home to this launcher via Settings app (or you can copy the content of default.sh and paste it to Terminal/Termux app. Type su and grant root first!)
 - If you are using multi user or Work Profile, don't forget to allow "Display over other apps" manually at the App Info or you can run this terminal command instead:
 
