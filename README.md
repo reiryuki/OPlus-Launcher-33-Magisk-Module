@@ -20,7 +20,7 @@
 - Magisk or KernelSU installed
 - OPlus Core Magisk Module v0.2 or above installed https://github.com/reiryuki/OPlus-Core-Magisk-Module
 - Recents provider requires Android 13 (SDK 33) and up
-- Gesture navigation requires android.permission.INJECT_EVENTS. The permission can only be granted in AOSP signatured ROM or disabled Android Signature Verification in Android 13 (SDK 33) and bellow.
+- Full gesture navigation and double tap to sleep requires root permission (except in AOSP signatured ROM)
 
 ## Installation Guide & Download Link
 - Install OPlus Core Magisk Module v0.2 or above first: https://github.com/reiryuki/OPlus-Core-Magisk-Module
@@ -31,6 +31,12 @@
 - Reboot
 - If you are using KernelSU, you need to allow superuser list manually all package name listed in package.txt (and your home launcher app also) (enable show system apps) and reboot afterwards
 - Change your default home to this launcher via Settings app (or you can copy the content of default.sh and paste it to Terminal/Termux app. Type su and grant root first!)
+- If you are using multi user or Work Profile, don't forget to allow "Display over other apps" manually at the App Info or you can run this terminal command instead:
+
+`su`
+
+`appops set com.oplus.launcher SYSTEM_ALERT_WINDOW allow`
+
 
 ## Optionals
 - https://t.me/ryukinotes/5
