@@ -27,17 +27,18 @@
 - If you want to activate the recents provider, READ Optionals bellow!
 - Install this module https://www.pling.com/p/2181584/ via Magisk app or KernelSU app or Recovery if Magisk installed
 - If you are using KernelSU, you need to disable Unmount Modules by Default in KernelSU app settings
+- At the first installation, you need to reboot and re-install this module again afterwards to grant permissions (except in AOSP signatured ROM).
 - Reboot
 - If you are using KernelSU, you need to allow superuser list manually all package name listed in package.txt (and your home launcher app also) (enable show system apps) and reboot afterwards
 - Change your default home to this launcher via Settings app (or you can copy the content of default.sh and paste it to Terminal/Termux app. Type su and grant root first!)
 
 ## Optionals
 - https://t.me/ryukinotes/5
-- Global: https://t.me/androidryukimodsdiscussions/60861
+- Global: https://t.me/ryukinotes/35
 
 ## Troubleshootings
 - https://t.me/ryukinotes/5
-- Global: https://t.me/androidryukimodsdiscussions/29836
+- Global: https://t.me/ryukinotes/34
 
 ## Known Issues
 - There is a space at the bottom in device that uses hardware navigation bar
@@ -50,6 +51,7 @@
 - If you don't do above, issues will be closed immediately
 
 ## Credits and Contributors
+- @KaldirimMuhendisi
 - https://t.me/androidryukimodsdiscussions
 - You can contribute ideas about this Magisk Module here: https://t.me/androidappsportdevelopment
 
