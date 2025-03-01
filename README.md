@@ -1,4 +1,4 @@
-# OPlus Launcher 33 Magisk Module
+# OPlus Launcher 34 Magisk Module
 
 ## DISCLAIMER
 - OPlus apps and blobs are owned by OPlus™.
@@ -8,7 +8,7 @@
 - Home launcher app by OnePlus Ltd. ported and integrated as a Magisk Module for all supported and rooted devices with Magisk
 
 ## Sources
-- https://apkmirror.com com.android.launcher (target SDK 33), com.oplus.athena, & com.oplus.uxdesign by OnePlus Ltd.
+- https://apkmirror.com com.android.launcher (target SDK 34), com.oplus.athena, & com.oplus.uxdesign by OnePlus Ltd.
 - libmagiskpolicy.so: Kitsune Mask R6687BB53
 
 ## Screenshots
@@ -19,7 +19,7 @@
 - Android 11 (SDK 30) and up
 - Magisk or KernelSU installed
 - OPlus Core Magisk Module v0.2 or above installed https://github.com/reiryuki/OPlus-Core-Magisk-Module
-- Recents provider requires Android 13 (SDK 33) and up
+- Recents provider requires Android 14 (SDK 34) and up
 - Full gesture navigation and double tap to sleep requires root permission (except in AOSP signatured ROM)
 
 ## Installation Guide & Download Link
@@ -49,10 +49,11 @@
 - There is a space at the bottom in device that uses hardware navigation bar
 - The animation when opening an app looks a bit strange
 - Icons option doesn't work
-- Split screen doesn't work and no freeform window option in the recents provider if it's activated
+- No freeform window option in the recents provider if it's activated
+- Pressing recents button from splitscreen resulting in UI bug. Run `su -c killall com.oplus.launcher` to fix that.
 
 ## Support & Bug Report
-- https://t.me/androidryukimodsdiscussions/2618
+- https://t.me/ryukinotes/54
 - If you don't do above, issues will be closed immediately
 
 ## Credits and Contributors
