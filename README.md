@@ -46,6 +46,7 @@
 - Global: https://t.me/ryukinotes/34
 
 ## Known Issues
+- Full gesture navigation doesn't work
 - There is a space at the bottom in device that uses hardware navigation bar
 - The animation when opening an app looks a bit strange
 - Icons option doesn't work
