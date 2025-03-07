@@ -6,11 +6,26 @@ create { system_lib_file vendor_file vendor_configs_file vendor_overlay_file }
 allow { system_file system_lib_file vendor_file vendor_configs_file vendor_overlay_file } labeledfs filesystem associate
 allow init { system_file system_lib_file vendor_file vendor_configs_file vendor_overlay_file } { dir file } relabelfrom
 
-# dir
-allow { system_app priv_app platform_app untrusted_app_29 untrusted_app_27 untrusted_app } { blkio_dev sysfs_batteryinfo sysfs_battery_supply } dir search
+## OPlusLauncher
 
 # file
-allow { system_app priv_app platform_app untrusted_app_29 untrusted_app_27 untrusted_app } bluetooth_prop file read
-allow { system_app priv_app platform_app untrusted_app_29 untrusted_app_27 untrusted_app } proc_filesystems file open
+allow { system_app priv_app platform_app untrusted_app_29 untrusted_app_27 untrusted_app } theme_prop file { read open map }
+
+# sock_file
+allow { system_app priv_app platform_app untrusted_app_29 untrusted_app_27 untrusted_app } property_socket sock_file write
+
+# unix_stream_socket
+allow { system_app priv_app platform_app untrusted_app_29 untrusted_app_27 untrusted_app } init unix_stream_socket connectto
+
+# property_service
+allow { system_app priv_app platform_app untrusted_app_29 untrusted_app_27 untrusted_app } { theme_prop system_prop } property_service set
+
+## UXDesign
+
+# file
+allow { system_app priv_app platform_app untrusted_app_29 untrusted_app_27 untrusted_app } vendor_default_prop file { open getattr map }
+
+# dir
+allow { system_app priv_app platform_app untrusted_app_29 untrusted_app_27 untrusted_app } system_data_file dir { read write open }
 
 
