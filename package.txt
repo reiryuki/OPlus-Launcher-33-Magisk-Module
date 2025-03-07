@@ -1,3 +1,5 @@
-com.oplus.launcher
-com.oplus.uxdesign
-com.oplus.athena
+com.sec.android.app.launcher
+com.sec.android.app.launcher.recents.overlay
+com.sec.android.provider.badge
+com.samsung.android.rubin.app
+org.blinksd.settings

@@ -4,83 +4,6 @@ ui_print " "
 # var
 UID=`id -u`
 [ ! "$UID" ] && UID=0
-FIRARCH=`grep_get_prop ro.bionic.arch`
-SECARCH=`grep_get_prop ro.bionic.2nd_arch`
-ABILIST=`grep_get_prop ro.product.cpu.abilist`
-if [ ! "$ABILIST" ]; then
-  ABILIST=`grep_get_prop ro.system.product.cpu.abilist`
-fi
-if [ "$FIRARCH" == arm64 ]\
-&& ! echo "$ABILIST" | grep -q arm64-v8a; then
-  if [ "$ABILIST" ]; then
-    ABILIST="$ABILIST,arm64-v8a"
-  else
-    ABILIST=arm64-v8a
-  fi
-fi
-if [ "$FIRARCH" == x64 ]\
-&& ! echo "$ABILIST" | grep -q x86_64; then
-  if [ "$ABILIST" ]; then
-    ABILIST="$ABILIST,x86_64"
-  else
-    ABILIST=x86_64
-  fi
-fi
-if [ "$SECARCH" == arm ]\
-&& ! echo "$ABILIST" | grep -q armeabi; then
-  if [ "$ABILIST" ]; then
-    ABILIST="$ABILIST,armeabi"
-  else
-    ABILIST=armeabi
-  fi
-fi
-if [ "$SECARCH" == arm ]\
-&& ! echo "$ABILIST" | grep -q armeabi-v7a; then
-  if [ "$ABILIST" ]; then
-    ABILIST="$ABILIST,armeabi-v7a"
-  else
-    ABILIST=armeabi-v7a
-  fi
-fi
-if [ "$SECARCH" == x86 ]\
-&& ! echo "$ABILIST" | grep -q x86; then
-  if [ "$ABILIST" ]; then
-    ABILIST="$ABILIST,x86"
-  else
-    ABILIST=x86
-  fi
-fi
-ABILIST32=`grep_get_prop ro.product.cpu.abilist32`
-if [ ! "$ABILIST32" ]; then
-  ABILIST32=`grep_get_prop ro.system.product.cpu.abilist32`
-fi
-if [ "$SECARCH" == arm ]\
-&& ! echo "$ABILIST32" | grep -q armeabi; then
-  if [ "$ABILIST32" ]; then
-    ABILIST32="$ABILIST32,armeabi"
-  else
-    ABILIST32=armeabi
-  fi
-fi
-if [ "$SECARCH" == arm ]\
-&& ! echo "$ABILIST32" | grep -q armeabi-v7a; then
-  if [ "$ABILIST32" ]; then
-    ABILIST32="$ABILIST32,armeabi-v7a"
-  else
-    ABILIST32=armeabi-v7a
-  fi
-fi
-if [ "$SECARCH" == x86 ]\
-&& ! echo "$ABILIST32" | grep -q x86; then
-  if [ "$ABILIST32" ]; then
-    ABILIST32="$ABILIST32,x86"
-  else
-    ABILIST32=x86
-  fi
-fi
-if [ ! "$ABILIST32" ]; then
-  [ -f /system/lib/libandroid.so ] && ABILIST32=true
-fi
 
 # log
 if [ "$BOOTMODE" != true ]; then
@@ -131,7 +54,7 @@ fi
 ui_print " "
 
 # sdk
-NUM=30
+NUM=33
 if [ "$API" -lt $NUM ]; then
   ui_print "! Unsupported SDK $API."
   ui_print "  You have to upgrade your Android version"
@@ -142,20 +65,20 @@ else
   ui_print " "
 fi
 
-# oplus core
-FILE=/data/adb/modules/OPlusCore/module.prop
+# one ui core
+FILE=/data/adb/modules/OneUICore/module.prop
 NUM=`grep_prop versionCode $FILE`
 if [ ! -f $FILE ]; then
-  ui_print "! OPlus Core Magisk Module is not installed."
-  ui_print "  Please read github installation guide!"
+  ui_print "! One UI Core Magisk Module is not installed."
+  ui_print "  Please read the Installation Guide!"
   abort
-elif [ "$NUM" -lt 3 ]; then
-  ui_print "! This version requires OPlus Core Magisk Module"
-  ui_print "  v0.3 or above."
+elif [ "$NUM" -lt 15 ]; then
+  ui_print "! This version requires One UI Core Magisk Module"
+  ui_print "  v1.5 or above."
   abort
 else
-  rm -f /data/adb/modules/OPlusCore/remove
-  rm -f /data/adb/modules/OPlusCore/disable
+  rm -f /data/adb/modules/OneUICore/remove
+  rm -f /data/adb/modules/OneUICore/disable
 fi
 
 # recovery
@@ -171,7 +94,7 @@ fi
 
 # cleaning
 ui_print "- Cleaning..."
-PKGS="`cat $MODPATH/package.txt` com.oneplus.launcher"
+PKGS=`cat $MODPATH/package.txt`
 if [ "$BOOTMODE" == true ]; then
   for PKG in $PKGS; do
     FILE=`find /data/app -name *$PKG*`
@@ -209,12 +132,21 @@ done
 }
 
 # conflict
-NAMES=OnePlusLauncher
+NAMES=oneuilauncher
 conflict
+
+# display device type
+FILE=$MODPATH/service.sh
+DDT=`grep_prop oneui.ddt $OPTIONALS`
+if [ "$DDT" ]; then
+  ui_print "- Sets display device type to $DDT"
+  sed -i "s|ro.samsung.display.device.type 0|ro.samsung.display.device.type $DDT|g" $FILE
+  ui_print " "
+fi
 
 # recents
 NUM=34
-if [ "`grep_prop oplus.recents $OPTIONALS`" == 1 ]; then
+if [ "`grep_prop oneui.recents $OPTIONALS`" == 1 ]; then
   if [ "$API" -ge $NUM ]; then
     RECENTS=true
   else
@@ -240,27 +172,13 @@ if [ "$RECENTS" == true ]; then
   done
   ui_print " "
 else
-  rm -rf $MODPATH/system/product/overlay\
-   `find $MODPATH -name *thena*`
+  rm -rf $MODPATH/system/product
 fi
 if [ "$RECENTS" == true ] && [ ! -d /product/overlay ]; then
   ui_print "- Using /vendor/overlay/ instead of /product/overlay/"
-  mkdir -p $MODPATH/system/vendor
-  mv -f $MODPATH/system/product/overlay $MODPATH/system/vendor
+  mv -f $MODPATH/system/product $MODPATH/system/vendor
   ui_print " "
 fi
-
-# media
-unused() {
-if [ ! -d /product/media ] && [ -d /system/media ]; then
-  ui_print "- Using /system/media instead of /product/media"
-  mv -f $MODPATH/system/product/media $MODPATH/system
-  ui_print " "
-elif [ ! -d /product/media ] && [ ! -d /system/media ]; then
-  ui_print "! /product/media & /system/media not found"
-  ui_print " "
-fi
-}
 
 # function
 cleanup() {
@@ -282,12 +200,12 @@ if [ "`grep_prop data.cleanup $OPTIONALS`" == 1 ]; then
   ui_print "- Cleaning-up $MODID data..."
   cleanup
   ui_print " "
-#elif [ -d $DIR ]\
-#&& [ "$PREVMODNAME" != "$MODNAME" ]; then
-#  ui_print "- Different module name is detected"
-#  ui_print "  Cleaning-up $MODID data..."
-#  cleanup
-#  ui_print " "
+elif [ -d $DIR ]\
+&& [ "$PREVMODNAME" != "$MODNAME" ]; then
+  ui_print "- Different module name is detected"
+  ui_print "  Cleaning-up $MODID data..."
+  cleanup
+  ui_print " "
 fi
 
 # function
@@ -387,327 +305,315 @@ ui_print "  then you need to reinstall this module, reboot,"
 ui_print "  & reinstall again to re-grant permissions."
 }
 warning_2() {
-ui_print "  If android.permission.INTERACT_ACROSS_USERS_FULL"
-ui_print "  still not granted, then you need to reinstall this module"
-ui_print "  again after reboot."
+ui_print "  Granting permissions at the first installation"
+ui_print "  doesn't work. You need to reinstall this module again"
+ui_print "  after reboot to grant permissions."
 }
 patch_runtime_permisions() {
-ui_print "- Granting permissions"
-ui_print "  Please wait..."
 # patching other than 0 causes bootloop
 FILES=`find /data/system/users/0 /data/misc_de/0 -type f -name runtime-permissions.xml`
 for FILE in $FILES; do
   chmod 0600 $FILE
-  if grep -q '<shared-user name="oppo.uid.launcher" />' $FILE; then
-    sed -i 's|<shared-user name="oppo.uid.launcher" />|\
-<shared-user name="oppo.uid.launcher">\
-<permission name="android.permission.INPUT_CONSUMER" granted="true" flags="0" />\
+  if grep -q '<package name="com.sec.android.app.launcher" />' $FILE; then
+    sed -i 's|<package name="com.sec.android.app.launcher" />|\
+<package name="com.sec.android.app.launcher">\
 <permission name="android.permission.WRITE_SETTINGS" granted="true" flags="0" />\
+<permission name="android.permission.CONTROL_KEYGUARD" granted="true" flags="0" />\
 <permission name="android.permission.READ_WALLPAPER_INTERNAL" granted="true" flags="0" />\
-<permission name="android.permission.POST_NOTIFICATIONS" granted="true" flags="0" />\
-<permission name="android.permission.MODIFY_AUDIO_SETTINGS" granted="true" flags="0" />\
+<permission name="android.permission.SET_PROCESS_LIMIT" granted="true" flags="0" />\
+<permission name="android.permission.MANAGE_EXTERNAL_STORAGE" granted="true" flags="0" />\
+<permission name="com.samsung.android.rubin.context.permission.READ_CONTEXT_MANAGER" granted="true" flags="0" />\
+<permission name="com.samsung.android.provider.indexing.permission.ACCESS_PROVIDER" granted="true" flags="0" />\
 <permission name="android.permission.SYSTEM_ALERT_WINDOW" granted="true" flags="0" />\
 <permission name="android.permission.START_TASKS_FROM_RECENTS" granted="true" flags="0" />\
 <permission name="android.permission.MONITOR_INPUT" granted="true" flags="0" />\
 <permission name="android.permission.CHANGE_COMPONENT_ENABLED_STATE" granted="true" flags="0" />\
 <permission name="android.permission.INTERNAL_SYSTEM_WINDOW" granted="true" flags="0" />\
+<permission name="com.sec.android.provider.badge.permission.READ" granted="true" flags="0" />\
+<permission name="android.permission.START_ANY_ACTIVITY" granted="true" flags="0" />\
+<permission name="com.samsung.android.rubin.app.ui.permission.LAUNCH_RUBIN_SETTING" granted="true" flags="0" />\
+<permission name="android.permission.FOREGROUND_SERVICE" granted="true" flags="0" />\
 <permission name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" granted="true" flags="0" />\
 <permission name="android.permission.MANAGE_ACTIVITY_TASKS" granted="true" flags="0" />\
-<permission name="android.permission.RECEIVE_BOOT_COMPLETED" granted="true" flags="0" />\
+<permission name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" granted="true" flags="0" />\
 <permission name="android.permission.MANAGE_ROLE_HOLDERS" granted="true" flags="0" />\
 <permission name="android.permission.DEVICE_POWER" granted="true" flags="0" />\
 <permission name="android.permission.REMOVE_TASKS" granted="true" flags="0" />\
-<permission name="android.permission.EXPAND_STATUS_BAR" granted="true" flags="0" />\
-<permission name="com.android.launcher.permission.ACTION_DEEP_PROTECT_START_APP" granted="true" flags="0" />\
+<permission name="android.permission.ACCESS_SURFACE_FLINGER" granted="true" flags="0" />\
 <permission name="android.permission.INTERNET" granted="true" flags="0" />\
-<permission name="com.android.launcher.permission.HOTSEAT_EDU" granted="true" flags="0" />\
 <permission name="android.permission.REORDER_TASKS" granted="true" flags="0" />\
+<permission name="com.android.browser.permission.READ_HISTORY_BOOKMARKS" granted="true" flags="0" />\
+<permission name="android.permission.GET_INTENT_SENDER_INTENT" granted="true" flags="0" />\
+<permission name="com.samsung.android.rubin.persona.permission.READ_PERSONA_MANAGER" granted="true" flags="0" />\
 <permission name="android.permission.ROTATE_SURFACE_FLINGER" granted="true" flags="0" />\
 <permission name="android.permission.READ_EXTERNAL_STORAGE" granted="true" flags="0" />\
 <permission name="android.permission.MANAGE_ACCESSIBILITY" granted="true" flags="0" />\
-<permission name="com.android.launcher.permission.WRITE_SETTINGS" granted="true" flags="0" />\
 <permission name="android.permission.CONTROL_REMOTE_APP_TRANSITION_ANIMATIONS" granted="true" flags="0" />\
+<permission name="android.permission.USE_EXACT_ALARM" granted="true" flags="0" />\
 <permission name="android.permission.INTERACT_ACROSS_USERS_FULL" granted="true" flags="0" />\
 <permission name="android.permission.BIND_APPWIDGET" granted="true" flags="0" />\
 <permission name="android.permission.STOP_APP_SWITCHES" granted="true" flags="0" />\
+<permission name="android.permission.PACKAGE_USAGE_STATS" granted="true" flags="0" />\
+<permission name="android.permission.GET_ACCOUNTS_PRIVILEGED" granted="true" flags="0" />\
 <permission name="android.permission.WRITE_SECURE_SETTINGS" granted="true" flags="0" />\
+<permission name="com.sec.permission.BACKUP_RESTORE_HOMESCREEN" granted="true" flags="0" />\
+<permission name="android.permission.SET_ACTIVITY_WATCHER" granted="true" flags="0" />\
 <permission name="android.permission.STATUS_BAR_SERVICE" granted="true" flags="0" />\
-<permission name="com.android.launcher.permission.READ_SETTINGS" granted="true" flags="0" />\
+<permission name="android.permission.READ_SEARCH_INDEXABLES" granted="true" flags="0" />\
+<permission name="android.permission.READ_PHONE_STATE" granted="true" flags="0" />\
 <permission name="android.permission.READ_PRIVILEGED_PHONE_STATE" granted="true" flags="0" />\
-<permission name="android.permission.CALL_PHONE" granted="true" flags="0" />\
 <permission name="android.permission.READ_MEDIA_IMAGES" granted="true" flags="0" />\
-<permission name="android.permission.SUBSTITUTE_NOTIFICATION_APP_NAME" granted="true" flags="0" />\
-<permission name="android.permission.SYSTEM_APPLICATION_OVERLAY" granted="true" flags="0" />\
+<permission name="android.permission.ACCESS_KEYGUARD_SECURE_STORAGE" granted="true" flags="0" />\
+<permission name="android.permission.INPUT_CONSUMER" granted="true" flags="0" />\
 <permission name="android.permission.SET_ORIENTATION" granted="true" flags="0" />\
 <permission name="android.permission.MANAGE_USERS" granted="true" flags="0" />\
-<permission name="android.permission.SET_PREFERRED_APPLICATIONS" granted="true" flags="0" />\
-<permission name="android.permission.SET_WALLPAPER_COMPONENT" granted="true" flags="0" />\
 <permission name="android.permission.ACCESS_NETWORK_STATE" granted="true" flags="0" />\
-<permission name="android.permission.CHANGE_CONFIGURATION" granted="true" flags="0" />\
+<permission name="android.permission.DISABLE_KEYGUARD" granted="true" flags="0" />\
+<permission name="com.samsung.android.app.cocktailbarservice.permission.EDGE_HANDLER_STATE" granted="true" flags="0" />\
 <permission name="android.permission.INTERACT_ACROSS_USERS" granted="true" flags="0" />\
-<permission name="android.permission.SET_WALLPAPER" granted="true" flags="0" />\
-<permission name="android.permission.WAKEUP_SURFACE_FLINGER" granted="true" flags="0" />\
 <permission name="android.permission.BROADCAST_CLOSE_SYSTEM_DIALOGS" granted="true" flags="0" />\
+<permission name="android.permission.READ_MEDIA_VIDEO" granted="true" flags="0" />\
+<permission name="com.android.vending.appdiscoveryservice.permission.ACCESS_APP_DISCOVERY_SERVICE" granted="true" flags="0" />\
+<permission name="com.sec.android.app.launcher.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" granted="true" flags="0" />\
+<permission name="android.permission.REGISTER_STATS_PULL_ATOM" granted="true" flags="0" />\
 <permission name="android.permission.ACCESS_SHORTCUTS" granted="true" flags="0" />\
 <permission name="android.permission.REQUEST_DELETE_PACKAGES" granted="true" flags="0" />\
-<permission name="android.permission.ADD_TRUSTED_DISPLAY" granted="true" flags="0" />\
-<permission name="android.permission.SET_WALLPAPER_HINTS" granted="true" flags="0" />\
+<permission name="android.permission.SUSPEND_APPS" granted="true" flags="0" />\
+<permission name="android.permission.GLOBAL_SEARCH" granted="true" flags="0" />\
+<permission name="com.samsung.android.app.galaxyfinder.permission.ACCESS_APPLICATION_PROVIDER" granted="true" flags="0" />\
 <permission name="android.permission.ALLOW_SLIPPERY_TOUCHES" granted="true" flags="0" />\
+<permission name="android.permission.START_ACTIVITIES_FROM_BACKGROUND" granted="true" flags="0" />\
+<permission name="android.permission.FORCE_STOP_PACKAGES" granted="true" flags="0" />\
+<permission name="com.samsung.android.app.cocktailbarservice.permission.ACCESS_PANEL" granted="true" flags="0" />\
+<permission name="android.permission.WRITE_EXTERNAL_STORAGE" granted="true" flags="0" />\
 <permission name="android.permission.VIBRATE" granted="true" flags="0" />\
-<permission name="android.permission.CAPTURE_BLACKOUT_CONTENT" granted="true" flags="0" />\
-<permission name="android.permission.MANAGE_APP_HIBERNATION" granted="true" flags="0" />\
 <permission name="android.permission.MANAGE_ACTIVITY_STACKS" granted="true" flags="0" />\
-<permission name="android.permission.MODIFY_APPWIDGET_BIND_PERMISSIONS" granted="true" flags="0" />\
-<permission name="android.permission.ACCESS_WIFI_STATE" granted="true" flags="0" />\
-<permission name="android.permission.USE_BIOMETRIC" granted="true" flags="0" />\
+<permission name="android.permission.VIEW_INSTANT_APPS" granted="true" flags="0" />\
+<permission name="android.permission.SET_UNRESTRICTED_GESTURE_EXCLUSION" granted="true" flags="0" />\
 <permission name="android.permission.STATUS_BAR" granted="true" flags="0" />\
 <permission name="android.permission.READ_FRAME_BUFFER" granted="true" flags="0" />\
 <permission name="android.permission.QUERY_ALL_PACKAGES" granted="true" flags="0" />\
 <permission name="android.permission.READ_DEVICE_CONFIG" granted="true" flags="0" />\
 <permission name="android.permission.UNLIMITED_TOASTS" granted="true" flags="0" />\
+<permission name="android.permission.WAKE_LOCK" granted="true" flags="0" />\
+<permission name="android.permission.READ_CONTACTS" granted="true" flags="0" />\
 <permission name="android.permission.INJECT_EVENTS" granted="true" flags="0" />\
-<permission name="android.permission.DELETE_PACKAGES" granted="true" flags="0" />\
-</shared-user>\n|g' $FILE
+<permission name="android.permission.ACCESS_MEDIA_LOCATION" granted="true" flags="0" />\
+</package>\n|g' $FILE
     warning
-  elif grep -q '<shared-user name="oppo.uid.launcher"/>' $FILE; then
-    sed -i 's|<shared-user name="oppo.uid.launcher"/>|\
-<shared-user name="oppo.uid.launcher">\
-<permission name="android.permission.INPUT_CONSUMER" granted="true" flags="0" />\
+  elif grep -q '<package name="com.sec.android.app.launcher"/>' $FILE; then
+    sed -i 's|<package name="com.sec.android.app.launcher"/>|\
+<package name="com.sec.android.app.launcher">\
 <permission name="android.permission.WRITE_SETTINGS" granted="true" flags="0" />\
+<permission name="android.permission.CONTROL_KEYGUARD" granted="true" flags="0" />\
 <permission name="android.permission.READ_WALLPAPER_INTERNAL" granted="true" flags="0" />\
-<permission name="android.permission.POST_NOTIFICATIONS" granted="true" flags="0" />\
-<permission name="android.permission.MODIFY_AUDIO_SETTINGS" granted="true" flags="0" />\
+<permission name="android.permission.SET_PROCESS_LIMIT" granted="true" flags="0" />\
+<permission name="android.permission.MANAGE_EXTERNAL_STORAGE" granted="true" flags="0" />\
+<permission name="com.samsung.android.rubin.context.permission.READ_CONTEXT_MANAGER" granted="true" flags="0" />\
+<permission name="com.samsung.android.provider.indexing.permission.ACCESS_PROVIDER" granted="true" flags="0" />\
 <permission name="android.permission.SYSTEM_ALERT_WINDOW" granted="true" flags="0" />\
 <permission name="android.permission.START_TASKS_FROM_RECENTS" granted="true" flags="0" />\
 <permission name="android.permission.MONITOR_INPUT" granted="true" flags="0" />\
 <permission name="android.permission.CHANGE_COMPONENT_ENABLED_STATE" granted="true" flags="0" />\
 <permission name="android.permission.INTERNAL_SYSTEM_WINDOW" granted="true" flags="0" />\
+<permission name="com.sec.android.provider.badge.permission.READ" granted="true" flags="0" />\
+<permission name="android.permission.START_ANY_ACTIVITY" granted="true" flags="0" />\
+<permission name="com.samsung.android.rubin.app.ui.permission.LAUNCH_RUBIN_SETTING" granted="true" flags="0" />\
+<permission name="android.permission.FOREGROUND_SERVICE" granted="true" flags="0" />\
 <permission name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" granted="true" flags="0" />\
 <permission name="android.permission.MANAGE_ACTIVITY_TASKS" granted="true" flags="0" />\
-<permission name="android.permission.RECEIVE_BOOT_COMPLETED" granted="true" flags="0" />\
+<permission name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" granted="true" flags="0" />\
 <permission name="android.permission.MANAGE_ROLE_HOLDERS" granted="true" flags="0" />\
 <permission name="android.permission.DEVICE_POWER" granted="true" flags="0" />\
 <permission name="android.permission.REMOVE_TASKS" granted="true" flags="0" />\
-<permission name="android.permission.EXPAND_STATUS_BAR" granted="true" flags="0" />\
-<permission name="com.android.launcher.permission.ACTION_DEEP_PROTECT_START_APP" granted="true" flags="0" />\
+<permission name="android.permission.ACCESS_SURFACE_FLINGER" granted="true" flags="0" />\
 <permission name="android.permission.INTERNET" granted="true" flags="0" />\
-<permission name="com.android.launcher.permission.HOTSEAT_EDU" granted="true" flags="0" />\
 <permission name="android.permission.REORDER_TASKS" granted="true" flags="0" />\
+<permission name="com.android.browser.permission.READ_HISTORY_BOOKMARKS" granted="true" flags="0" />\
+<permission name="android.permission.GET_INTENT_SENDER_INTENT" granted="true" flags="0" />\
+<permission name="com.samsung.android.rubin.persona.permission.READ_PERSONA_MANAGER" granted="true" flags="0" />\
 <permission name="android.permission.ROTATE_SURFACE_FLINGER" granted="true" flags="0" />\
 <permission name="android.permission.READ_EXTERNAL_STORAGE" granted="true" flags="0" />\
 <permission name="android.permission.MANAGE_ACCESSIBILITY" granted="true" flags="0" />\
-<permission name="com.android.launcher.permission.WRITE_SETTINGS" granted="true" flags="0" />\
 <permission name="android.permission.CONTROL_REMOTE_APP_TRANSITION_ANIMATIONS" granted="true" flags="0" />\
+<permission name="android.permission.USE_EXACT_ALARM" granted="true" flags="0" />\
 <permission name="android.permission.INTERACT_ACROSS_USERS_FULL" granted="true" flags="0" />\
 <permission name="android.permission.BIND_APPWIDGET" granted="true" flags="0" />\
 <permission name="android.permission.STOP_APP_SWITCHES" granted="true" flags="0" />\
+<permission name="android.permission.PACKAGE_USAGE_STATS" granted="true" flags="0" />\
+<permission name="android.permission.GET_ACCOUNTS_PRIVILEGED" granted="true" flags="0" />\
 <permission name="android.permission.WRITE_SECURE_SETTINGS" granted="true" flags="0" />\
+<permission name="com.sec.permission.BACKUP_RESTORE_HOMESCREEN" granted="true" flags="0" />\
+<permission name="android.permission.SET_ACTIVITY_WATCHER" granted="true" flags="0" />\
 <permission name="android.permission.STATUS_BAR_SERVICE" granted="true" flags="0" />\
-<permission name="com.android.launcher.permission.READ_SETTINGS" granted="true" flags="0" />\
+<permission name="android.permission.READ_SEARCH_INDEXABLES" granted="true" flags="0" />\
+<permission name="android.permission.READ_PHONE_STATE" granted="true" flags="0" />\
 <permission name="android.permission.READ_PRIVILEGED_PHONE_STATE" granted="true" flags="0" />\
-<permission name="android.permission.CALL_PHONE" granted="true" flags="0" />\
 <permission name="android.permission.READ_MEDIA_IMAGES" granted="true" flags="0" />\
-<permission name="android.permission.SUBSTITUTE_NOTIFICATION_APP_NAME" granted="true" flags="0" />\
-<permission name="android.permission.SYSTEM_APPLICATION_OVERLAY" granted="true" flags="0" />\
+<permission name="android.permission.ACCESS_KEYGUARD_SECURE_STORAGE" granted="true" flags="0" />\
+<permission name="android.permission.INPUT_CONSUMER" granted="true" flags="0" />\
 <permission name="android.permission.SET_ORIENTATION" granted="true" flags="0" />\
 <permission name="android.permission.MANAGE_USERS" granted="true" flags="0" />\
-<permission name="android.permission.SET_PREFERRED_APPLICATIONS" granted="true" flags="0" />\
-<permission name="android.permission.SET_WALLPAPER_COMPONENT" granted="true" flags="0" />\
 <permission name="android.permission.ACCESS_NETWORK_STATE" granted="true" flags="0" />\
-<permission name="android.permission.CHANGE_CONFIGURATION" granted="true" flags="0" />\
+<permission name="android.permission.DISABLE_KEYGUARD" granted="true" flags="0" />\
+<permission name="com.samsung.android.app.cocktailbarservice.permission.EDGE_HANDLER_STATE" granted="true" flags="0" />\
 <permission name="android.permission.INTERACT_ACROSS_USERS" granted="true" flags="0" />\
-<permission name="android.permission.SET_WALLPAPER" granted="true" flags="0" />\
-<permission name="android.permission.WAKEUP_SURFACE_FLINGER" granted="true" flags="0" />\
 <permission name="android.permission.BROADCAST_CLOSE_SYSTEM_DIALOGS" granted="true" flags="0" />\
+<permission name="android.permission.READ_MEDIA_VIDEO" granted="true" flags="0" />\
+<permission name="com.android.vending.appdiscoveryservice.permission.ACCESS_APP_DISCOVERY_SERVICE" granted="true" flags="0" />\
+<permission name="com.sec.android.app.launcher.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" granted="true" flags="0" />\
+<permission name="android.permission.REGISTER_STATS_PULL_ATOM" granted="true" flags="0" />\
 <permission name="android.permission.ACCESS_SHORTCUTS" granted="true" flags="0" />\
 <permission name="android.permission.REQUEST_DELETE_PACKAGES" granted="true" flags="0" />\
-<permission name="android.permission.ADD_TRUSTED_DISPLAY" granted="true" flags="0" />\
-<permission name="android.permission.SET_WALLPAPER_HINTS" granted="true" flags="0" />\
+<permission name="android.permission.SUSPEND_APPS" granted="true" flags="0" />\
+<permission name="android.permission.GLOBAL_SEARCH" granted="true" flags="0" />\
+<permission name="com.samsung.android.app.galaxyfinder.permission.ACCESS_APPLICATION_PROVIDER" granted="true" flags="0" />\
 <permission name="android.permission.ALLOW_SLIPPERY_TOUCHES" granted="true" flags="0" />\
+<permission name="android.permission.START_ACTIVITIES_FROM_BACKGROUND" granted="true" flags="0" />\
+<permission name="android.permission.FORCE_STOP_PACKAGES" granted="true" flags="0" />\
+<permission name="com.samsung.android.app.cocktailbarservice.permission.ACCESS_PANEL" granted="true" flags="0" />\
+<permission name="android.permission.WRITE_EXTERNAL_STORAGE" granted="true" flags="0" />\
 <permission name="android.permission.VIBRATE" granted="true" flags="0" />\
-<permission name="android.permission.CAPTURE_BLACKOUT_CONTENT" granted="true" flags="0" />\
-<permission name="android.permission.MANAGE_APP_HIBERNATION" granted="true" flags="0" />\
 <permission name="android.permission.MANAGE_ACTIVITY_STACKS" granted="true" flags="0" />\
-<permission name="android.permission.MODIFY_APPWIDGET_BIND_PERMISSIONS" granted="true" flags="0" />\
-<permission name="android.permission.ACCESS_WIFI_STATE" granted="true" flags="0" />\
-<permission name="android.permission.USE_BIOMETRIC" granted="true" flags="0" />\
+<permission name="android.permission.VIEW_INSTANT_APPS" granted="true" flags="0" />\
+<permission name="android.permission.SET_UNRESTRICTED_GESTURE_EXCLUSION" granted="true" flags="0" />\
 <permission name="android.permission.STATUS_BAR" granted="true" flags="0" />\
 <permission name="android.permission.READ_FRAME_BUFFER" granted="true" flags="0" />\
 <permission name="android.permission.QUERY_ALL_PACKAGES" granted="true" flags="0" />\
 <permission name="android.permission.READ_DEVICE_CONFIG" granted="true" flags="0" />\
 <permission name="android.permission.UNLIMITED_TOASTS" granted="true" flags="0" />\
+<permission name="android.permission.WAKE_LOCK" granted="true" flags="0" />\
+<permission name="android.permission.READ_CONTACTS" granted="true" flags="0" />\
 <permission name="android.permission.INJECT_EVENTS" granted="true" flags="0" />\
-<permission name="android.permission.DELETE_PACKAGES" granted="true" flags="0" />\
-</shared-user>\n|g' $FILE
+<permission name="android.permission.ACCESS_MEDIA_LOCATION" granted="true" flags="0" />\
+</package>\n|g' $FILE
     warning
-  elif grep -q '<shared-user name="oppo.uid.launcher">' $FILE; then
+  elif grep -q '<package name="com.sec.android.app.launcher">' $FILE; then
     {
     COUNT=1
     LIST=`cat $FILE | sed 's|><|>\n<|g'`
-    RES=`echo "$LIST" | grep -A$COUNT '<shared-user name="oppo.uid.launcher">'`
-    until echo "$RES" | grep -q '</shared-user>'; do
+    RES=`echo "$LIST" | grep -A$COUNT '<package name="com.sec.android.app.launcher">'`
+    until echo "$RES" | grep -q '</package>'; do
       COUNT=`expr $COUNT + 1`
-      RES=`echo "$LIST" | grep -A$COUNT '<shared-user name="oppo.uid.launcher">'`
+      RES=`echo "$LIST" | grep -A$COUNT '<package name="com.sec.android.app.launcher">'`
     done
     } 2>/dev/null
     if ! echo "$RES" | grep -q 'name="android.permission.DEVICE_POWER" granted="true"'\
+    || ! echo "$RES" | grep -q 'name="android.permission.SUSPEND_APPS" granted="true"'\
     || ! echo "$RES" | grep -q 'name="android.permission.INTERACT_ACROSS_USERS_FULL" granted="true"'; then
       PATCH=true
     else
       PATCH=false
     fi
     if [ "$PATCH" == true ]; then
-      sed -i 's|<shared-user name="oppo.uid.launcher">|\
-<shared-user name="oppo.uid.launcher">\
-<permission name="android.permission.INPUT_CONSUMER" granted="true" flags="0" />\
+      sed -i 's|<package name="com.sec.android.app.launcher">|\
+<package name="com.sec.android.app.launcher">\
 <permission name="android.permission.WRITE_SETTINGS" granted="true" flags="0" />\
+<permission name="android.permission.CONTROL_KEYGUARD" granted="true" flags="0" />\
 <permission name="android.permission.READ_WALLPAPER_INTERNAL" granted="true" flags="0" />\
-<permission name="android.permission.POST_NOTIFICATIONS" granted="true" flags="0" />\
-<permission name="android.permission.MODIFY_AUDIO_SETTINGS" granted="true" flags="0" />\
+<permission name="android.permission.SET_PROCESS_LIMIT" granted="true" flags="0" />\
+<permission name="android.permission.MANAGE_EXTERNAL_STORAGE" granted="true" flags="0" />\
+<permission name="com.samsung.android.rubin.context.permission.READ_CONTEXT_MANAGER" granted="true" flags="0" />\
+<permission name="com.samsung.android.provider.indexing.permission.ACCESS_PROVIDER" granted="true" flags="0" />\
 <permission name="android.permission.SYSTEM_ALERT_WINDOW" granted="true" flags="0" />\
 <permission name="android.permission.START_TASKS_FROM_RECENTS" granted="true" flags="0" />\
 <permission name="android.permission.MONITOR_INPUT" granted="true" flags="0" />\
 <permission name="android.permission.CHANGE_COMPONENT_ENABLED_STATE" granted="true" flags="0" />\
 <permission name="android.permission.INTERNAL_SYSTEM_WINDOW" granted="true" flags="0" />\
+<permission name="com.sec.android.provider.badge.permission.READ" granted="true" flags="0" />\
+<permission name="android.permission.START_ANY_ACTIVITY" granted="true" flags="0" />\
+<permission name="com.samsung.android.rubin.app.ui.permission.LAUNCH_RUBIN_SETTING" granted="true" flags="0" />\
+<permission name="android.permission.FOREGROUND_SERVICE" granted="true" flags="0" />\
 <permission name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" granted="true" flags="0" />\
 <permission name="android.permission.MANAGE_ACTIVITY_TASKS" granted="true" flags="0" />\
-<permission name="android.permission.RECEIVE_BOOT_COMPLETED" granted="true" flags="0" />\
+<permission name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" granted="true" flags="0" />\
 <permission name="android.permission.MANAGE_ROLE_HOLDERS" granted="true" flags="0" />\
 <permission name="android.permission.DEVICE_POWER" granted="true" flags="0" />\
 <permission name="android.permission.REMOVE_TASKS" granted="true" flags="0" />\
-<permission name="android.permission.EXPAND_STATUS_BAR" granted="true" flags="0" />\
-<permission name="com.android.launcher.permission.ACTION_DEEP_PROTECT_START_APP" granted="true" flags="0" />\
+<permission name="android.permission.ACCESS_SURFACE_FLINGER" granted="true" flags="0" />\
 <permission name="android.permission.INTERNET" granted="true" flags="0" />\
-<permission name="com.android.launcher.permission.HOTSEAT_EDU" granted="true" flags="0" />\
 <permission name="android.permission.REORDER_TASKS" granted="true" flags="0" />\
+<permission name="com.android.browser.permission.READ_HISTORY_BOOKMARKS" granted="true" flags="0" />\
+<permission name="android.permission.GET_INTENT_SENDER_INTENT" granted="true" flags="0" />\
+<permission name="com.samsung.android.rubin.persona.permission.READ_PERSONA_MANAGER" granted="true" flags="0" />\
 <permission name="android.permission.ROTATE_SURFACE_FLINGER" granted="true" flags="0" />\
 <permission name="android.permission.READ_EXTERNAL_STORAGE" granted="true" flags="0" />\
 <permission name="android.permission.MANAGE_ACCESSIBILITY" granted="true" flags="0" />\
-<permission name="com.android.launcher.permission.WRITE_SETTINGS" granted="true" flags="0" />\
 <permission name="android.permission.CONTROL_REMOTE_APP_TRANSITION_ANIMATIONS" granted="true" flags="0" />\
+<permission name="android.permission.USE_EXACT_ALARM" granted="true" flags="0" />\
 <permission name="android.permission.INTERACT_ACROSS_USERS_FULL" granted="true" flags="0" />\
 <permission name="android.permission.BIND_APPWIDGET" granted="true" flags="0" />\
 <permission name="android.permission.STOP_APP_SWITCHES" granted="true" flags="0" />\
+<permission name="android.permission.PACKAGE_USAGE_STATS" granted="true" flags="0" />\
+<permission name="android.permission.GET_ACCOUNTS_PRIVILEGED" granted="true" flags="0" />\
 <permission name="android.permission.WRITE_SECURE_SETTINGS" granted="true" flags="0" />\
+<permission name="com.sec.permission.BACKUP_RESTORE_HOMESCREEN" granted="true" flags="0" />\
+<permission name="android.permission.SET_ACTIVITY_WATCHER" granted="true" flags="0" />\
 <permission name="android.permission.STATUS_BAR_SERVICE" granted="true" flags="0" />\
-<permission name="com.android.launcher.permission.READ_SETTINGS" granted="true" flags="0" />\
+<permission name="android.permission.READ_SEARCH_INDEXABLES" granted="true" flags="0" />\
+<permission name="android.permission.READ_PHONE_STATE" granted="true" flags="0" />\
 <permission name="android.permission.READ_PRIVILEGED_PHONE_STATE" granted="true" flags="0" />\
-<permission name="android.permission.CALL_PHONE" granted="true" flags="0" />\
 <permission name="android.permission.READ_MEDIA_IMAGES" granted="true" flags="0" />\
-<permission name="android.permission.SUBSTITUTE_NOTIFICATION_APP_NAME" granted="true" flags="0" />\
-<permission name="android.permission.SYSTEM_APPLICATION_OVERLAY" granted="true" flags="0" />\
+<permission name="android.permission.ACCESS_KEYGUARD_SECURE_STORAGE" granted="true" flags="0" />\
+<permission name="android.permission.INPUT_CONSUMER" granted="true" flags="0" />\
 <permission name="android.permission.SET_ORIENTATION" granted="true" flags="0" />\
 <permission name="android.permission.MANAGE_USERS" granted="true" flags="0" />\
-<permission name="android.permission.SET_PREFERRED_APPLICATIONS" granted="true" flags="0" />\
-<permission name="android.permission.SET_WALLPAPER_COMPONENT" granted="true" flags="0" />\
 <permission name="android.permission.ACCESS_NETWORK_STATE" granted="true" flags="0" />\
-<permission name="android.permission.CHANGE_CONFIGURATION" granted="true" flags="0" />\
+<permission name="android.permission.DISABLE_KEYGUARD" granted="true" flags="0" />\
+<permission name="com.samsung.android.app.cocktailbarservice.permission.EDGE_HANDLER_STATE" granted="true" flags="0" />\
 <permission name="android.permission.INTERACT_ACROSS_USERS" granted="true" flags="0" />\
-<permission name="android.permission.SET_WALLPAPER" granted="true" flags="0" />\
-<permission name="android.permission.WAKEUP_SURFACE_FLINGER" granted="true" flags="0" />\
 <permission name="android.permission.BROADCAST_CLOSE_SYSTEM_DIALOGS" granted="true" flags="0" />\
+<permission name="android.permission.READ_MEDIA_VIDEO" granted="true" flags="0" />\
+<permission name="com.android.vending.appdiscoveryservice.permission.ACCESS_APP_DISCOVERY_SERVICE" granted="true" flags="0" />\
+<permission name="com.sec.android.app.launcher.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" granted="true" flags="0" />\
+<permission name="android.permission.REGISTER_STATS_PULL_ATOM" granted="true" flags="0" />\
 <permission name="android.permission.ACCESS_SHORTCUTS" granted="true" flags="0" />\
 <permission name="android.permission.REQUEST_DELETE_PACKAGES" granted="true" flags="0" />\
-<permission name="android.permission.ADD_TRUSTED_DISPLAY" granted="true" flags="0" />\
-<permission name="android.permission.SET_WALLPAPER_HINTS" granted="true" flags="0" />\
+<permission name="android.permission.SUSPEND_APPS" granted="true" flags="0" />\
+<permission name="android.permission.GLOBAL_SEARCH" granted="true" flags="0" />\
+<permission name="com.samsung.android.app.galaxyfinder.permission.ACCESS_APPLICATION_PROVIDER" granted="true" flags="0" />\
 <permission name="android.permission.ALLOW_SLIPPERY_TOUCHES" granted="true" flags="0" />\
+<permission name="android.permission.START_ACTIVITIES_FROM_BACKGROUND" granted="true" flags="0" />\
+<permission name="android.permission.FORCE_STOP_PACKAGES" granted="true" flags="0" />\
+<permission name="com.samsung.android.app.cocktailbarservice.permission.ACCESS_PANEL" granted="true" flags="0" />\
+<permission name="android.permission.WRITE_EXTERNAL_STORAGE" granted="true" flags="0" />\
 <permission name="android.permission.VIBRATE" granted="true" flags="0" />\
-<permission name="android.permission.CAPTURE_BLACKOUT_CONTENT" granted="true" flags="0" />\
-<permission name="android.permission.MANAGE_APP_HIBERNATION" granted="true" flags="0" />\
 <permission name="android.permission.MANAGE_ACTIVITY_STACKS" granted="true" flags="0" />\
-<permission name="android.permission.MODIFY_APPWIDGET_BIND_PERMISSIONS" granted="true" flags="0" />\
-<permission name="android.permission.ACCESS_WIFI_STATE" granted="true" flags="0" />\
-<permission name="android.permission.USE_BIOMETRIC" granted="true" flags="0" />\
+<permission name="android.permission.VIEW_INSTANT_APPS" granted="true" flags="0" />\
+<permission name="android.permission.SET_UNRESTRICTED_GESTURE_EXCLUSION" granted="true" flags="0" />\
 <permission name="android.permission.STATUS_BAR" granted="true" flags="0" />\
 <permission name="android.permission.READ_FRAME_BUFFER" granted="true" flags="0" />\
 <permission name="android.permission.QUERY_ALL_PACKAGES" granted="true" flags="0" />\
 <permission name="android.permission.READ_DEVICE_CONFIG" granted="true" flags="0" />\
 <permission name="android.permission.UNLIMITED_TOASTS" granted="true" flags="0" />\
+<permission name="android.permission.WAKE_LOCK" granted="true" flags="0" />\
+<permission name="android.permission.READ_CONTACTS" granted="true" flags="0" />\
 <permission name="android.permission.INJECT_EVENTS" granted="true" flags="0" />\
-<permission name="android.permission.DELETE_PACKAGES" granted="true" flags="0" />\
-</shared-user>\n<shared-user name="removed">|g' $FILE
+<permission name="android.permission.ACCESS_MEDIA_LOCATION" granted="true" flags="0" />\
+</package>\n<package name="removed">|g' $FILE
       warning
     fi
   else
-    sed -i 's|</runtime-permissions>|\
-<shared-user name="oppo.uid.launcher">\
-<permission name="android.permission.INPUT_CONSUMER" granted="true" flags="0" />\
-<permission name="android.permission.WRITE_SETTINGS" granted="true" flags="0" />\
-<permission name="android.permission.READ_WALLPAPER_INTERNAL" granted="true" flags="0" />\
-<permission name="android.permission.POST_NOTIFICATIONS" granted="true" flags="0" />\
-<permission name="android.permission.MODIFY_AUDIO_SETTINGS" granted="true" flags="0" />\
-<permission name="android.permission.SYSTEM_ALERT_WINDOW" granted="true" flags="0" />\
-<permission name="android.permission.START_TASKS_FROM_RECENTS" granted="true" flags="0" />\
-<permission name="android.permission.MONITOR_INPUT" granted="true" flags="0" />\
-<permission name="android.permission.CHANGE_COMPONENT_ENABLED_STATE" granted="true" flags="0" />\
-<permission name="android.permission.INTERNAL_SYSTEM_WINDOW" granted="true" flags="0" />\
-<permission name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" granted="true" flags="0" />\
-<permission name="android.permission.MANAGE_ACTIVITY_TASKS" granted="true" flags="0" />\
-<permission name="android.permission.RECEIVE_BOOT_COMPLETED" granted="true" flags="0" />\
-<permission name="android.permission.MANAGE_ROLE_HOLDERS" granted="true" flags="0" />\
-<permission name="android.permission.DEVICE_POWER" granted="true" flags="0" />\
-<permission name="android.permission.REMOVE_TASKS" granted="true" flags="0" />\
-<permission name="android.permission.EXPAND_STATUS_BAR" granted="true" flags="0" />\
-<permission name="com.android.launcher.permission.ACTION_DEEP_PROTECT_START_APP" granted="true" flags="0" />\
-<permission name="android.permission.INTERNET" granted="true" flags="0" />\
-<permission name="com.android.launcher.permission.HOTSEAT_EDU" granted="true" flags="0" />\
-<permission name="android.permission.REORDER_TASKS" granted="true" flags="0" />\
-<permission name="android.permission.ROTATE_SURFACE_FLINGER" granted="true" flags="0" />\
-<permission name="android.permission.READ_EXTERNAL_STORAGE" granted="true" flags="0" />\
-<permission name="android.permission.MANAGE_ACCESSIBILITY" granted="true" flags="0" />\
-<permission name="com.android.launcher.permission.WRITE_SETTINGS" granted="true" flags="0" />\
-<permission name="android.permission.CONTROL_REMOTE_APP_TRANSITION_ANIMATIONS" granted="true" flags="0" />\
-<permission name="android.permission.INTERACT_ACROSS_USERS_FULL" granted="true" flags="0" />\
-<permission name="android.permission.BIND_APPWIDGET" granted="true" flags="0" />\
-<permission name="android.permission.STOP_APP_SWITCHES" granted="true" flags="0" />\
-<permission name="android.permission.WRITE_SECURE_SETTINGS" granted="true" flags="0" />\
-<permission name="android.permission.STATUS_BAR_SERVICE" granted="true" flags="0" />\
-<permission name="com.android.launcher.permission.READ_SETTINGS" granted="true" flags="0" />\
-<permission name="android.permission.READ_PRIVILEGED_PHONE_STATE" granted="true" flags="0" />\
-<permission name="android.permission.CALL_PHONE" granted="true" flags="0" />\
-<permission name="android.permission.READ_MEDIA_IMAGES" granted="true" flags="0" />\
-<permission name="android.permission.SUBSTITUTE_NOTIFICATION_APP_NAME" granted="true" flags="0" />\
-<permission name="android.permission.SYSTEM_APPLICATION_OVERLAY" granted="true" flags="0" />\
-<permission name="android.permission.SET_ORIENTATION" granted="true" flags="0" />\
-<permission name="android.permission.MANAGE_USERS" granted="true" flags="0" />\
-<permission name="android.permission.SET_PREFERRED_APPLICATIONS" granted="true" flags="0" />\
-<permission name="android.permission.SET_WALLPAPER_COMPONENT" granted="true" flags="0" />\
-<permission name="android.permission.ACCESS_NETWORK_STATE" granted="true" flags="0" />\
-<permission name="android.permission.CHANGE_CONFIGURATION" granted="true" flags="0" />\
-<permission name="android.permission.INTERACT_ACROSS_USERS" granted="true" flags="0" />\
-<permission name="android.permission.SET_WALLPAPER" granted="true" flags="0" />\
-<permission name="android.permission.WAKEUP_SURFACE_FLINGER" granted="true" flags="0" />\
-<permission name="android.permission.BROADCAST_CLOSE_SYSTEM_DIALOGS" granted="true" flags="0" />\
-<permission name="android.permission.ACCESS_SHORTCUTS" granted="true" flags="0" />\
-<permission name="android.permission.REQUEST_DELETE_PACKAGES" granted="true" flags="0" />\
-<permission name="android.permission.ADD_TRUSTED_DISPLAY" granted="true" flags="0" />\
-<permission name="android.permission.SET_WALLPAPER_HINTS" granted="true" flags="0" />\
-<permission name="android.permission.ALLOW_SLIPPERY_TOUCHES" granted="true" flags="0" />\
-<permission name="android.permission.VIBRATE" granted="true" flags="0" />\
-<permission name="android.permission.CAPTURE_BLACKOUT_CONTENT" granted="true" flags="0" />\
-<permission name="android.permission.MANAGE_APP_HIBERNATION" granted="true" flags="0" />\
-<permission name="android.permission.MANAGE_ACTIVITY_STACKS" granted="true" flags="0" />\
-<permission name="android.permission.MODIFY_APPWIDGET_BIND_PERMISSIONS" granted="true" flags="0" />\
-<permission name="android.permission.ACCESS_WIFI_STATE" granted="true" flags="0" />\
-<permission name="android.permission.USE_BIOMETRIC" granted="true" flags="0" />\
-<permission name="android.permission.STATUS_BAR" granted="true" flags="0" />\
-<permission name="android.permission.READ_FRAME_BUFFER" granted="true" flags="0" />\
-<permission name="android.permission.QUERY_ALL_PACKAGES" granted="true" flags="0" />\
-<permission name="android.permission.READ_DEVICE_CONFIG" granted="true" flags="0" />\
-<permission name="android.permission.UNLIMITED_TOASTS" granted="true" flags="0" />\
-<permission name="android.permission.INJECT_EVENTS" granted="true" flags="0" />\
-<permission name="android.permission.DELETE_PACKAGES" granted="true" flags="0" />\
-</shared-user>\n</runtime-permissions>|g' $FILE
     warning_2
   fi
 done
-ui_print " "
 }
 
 # patch runtime-permissions.xml
-if [ "$API" -lt 35 ]; then
-  patch_runtime_permisions
-fi
+#ui_print "- Granting permissions"
+#ui_print "  Please wait..."
+#patch_runtime_permisions
+#ui_print " "
+
+
+
+
+
+
+
+
+
+
 
 
 
